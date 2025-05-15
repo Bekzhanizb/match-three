@@ -7,6 +7,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import io.saqaStudio.com.controller.GameController;
+import io.saqaStudio.com.model.Field;
+import io.saqaStudio.com.model.GameModel;
+import io.saqaStudio.com.model.MatchThree;
 
 public class GameScreen extends ScreenAdapter {
 
