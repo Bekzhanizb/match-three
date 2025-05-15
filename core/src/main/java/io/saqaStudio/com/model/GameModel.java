@@ -5,28 +5,13 @@ public class GameModel {
     private int timeLeft = 60;
     private boolean gameOver = false;
 
-    public int getScore() {
-        return score;
-    }
-
-    public void addScore(int points) {
-        score += points;
-    }
-
-    public int getTimeLeft() {
-        return timeLeft;
-    }
-
+    public int getScore() { return score; }
+    public void setScore(int score) { this.score = score; }
+    public int getTimeLeft() { return timeLeft; }
     public void decreaseTime() {
-        if (timeLeft > 0) {
-            timeLeft--;
-        }
-        if (timeLeft == 0) {
-            gameOver = true;
-        }
+        if (timeLeft > 0) timeLeft--;
+        if (timeLeft == 0) gameOver = true;
     }
-
-    public boolean isGameOver() {
-        return gameOver;
-    }
+    public void addScore(int points) { this.score += points; }
+    public boolean isGameOver() { return gameOver; }
 }

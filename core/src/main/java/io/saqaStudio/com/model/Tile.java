@@ -1,22 +1,21 @@
 package io.saqaStudio.com.model;
 
-public class Tile {
-    private int type;
-    private boolean isMatched = false;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
-    public Tile(int type) {
-        this.type = type;
+public class Tile extends Image  {
+
+    public int type = -1;
+
+    public void init(TextureRegion sprite, int index){
+        setBounds(getX(), getY(), getWidth(), getHeight());
+        setDrawable(new TextureRegionDrawable(sprite));
+        this.type = index;
+    }
+    public boolean isMovable() {
+        return this.type != -1;
     }
 
-    public int getType() {
-        return type;
-    }
 
-    public boolean isMatched() {
-        return isMatched;
-    }
-
-    public void setMatched(boolean matched) {
-        isMatched = matched;
-    }
 }
