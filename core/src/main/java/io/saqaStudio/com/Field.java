@@ -1,21 +1,21 @@
-package io.saqaStudio.com.model;
+package io.saqaStudio.com;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.scenes.scene2d.Action;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.scenes.scene2d.Action;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
 
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 
@@ -29,10 +29,11 @@ public class Field extends Table implements Disposable {
     private final Sound swapWrong = Gdx.audio.newSound(Gdx.files.internal("sound/swap_wrong.ogg"));
     private final Sound swapSuccess = Gdx.audio.newSound(Gdx.files.internal("sound/swap_success.ogg"));
 
+    private MatchListener listener;
+
     private final ClickListener clickListener = new ClickListener() {
         Tile firstClick;
         int count = 0;
-
 
         final Action afterSwap = new Action() {
             @Override
@@ -54,7 +55,7 @@ public class Field extends Table implements Disposable {
 
         @Override
         public void clicked(InputEvent event, float x, float y) {
-            click.play(0.3f, 3f, 0);
+            GameServices.playClick();
             Tile target = (Tile) event.getTarget();
 
             if (firstClick != null) {
@@ -66,7 +67,7 @@ public class Field extends Table implements Disposable {
 
                 activeTiles.swap(tileIndex1, tileIndex2);
                 if ((tileIndex1 == tileIndex2 - 1 || tileIndex1 == tileIndex2 + 1 ||
-                    tileIndex1 == tileIndex2 + RANK || tileIndex1 == tileIndex2 - RANK) && hasMatches()) {
+                        tileIndex1 == tileIndex2 + RANK || tileIndex1 == tileIndex2 - RANK) && hasMatches()) {
                     swapActor(tileIndex1, tileIndex2);
                     target.addAction(moveTo(firstClick.getX(), firstClick.getY(), 0.2f));
                     firstClick.addAction(sequence(moveTo(target.getX(), target.getY(), 0.2f), afterSwap));
@@ -74,9 +75,9 @@ public class Field extends Table implements Disposable {
                     swapWrong.play(0.2f, 1f, 0);
                     activeTiles.swap(tileIndex1, tileIndex2);
                     target.addAction(sequence(moveTo(firstClick.getX(), firstClick.getY(), 0.1f),
-                        moveTo(target.getX(), target.getY(), 0.1f)));
+                            moveTo(target.getX(), target.getY(), 0.1f)));
                     firstClick.addAction(sequence(moveTo(target.getX(), target.getY(), 0.1f),
-                        moveTo(firstClick.getX(), firstClick.getY(), 0.1f), afterSwap));
+                            moveTo(firstClick.getX(), firstClick.getY(), 0.1f), afterSwap));
                 }
             }
 
@@ -93,8 +94,8 @@ public class Field extends Table implements Disposable {
                 target.setOrigin(Align.center);
                 target.addAction(sequence(parallel(moveTo(target.getX(), target.getY() + 10, 0.125f, Interpolation.swingOut),
                         Actions.scaleBy(0.2f, 0.2f, 0.125f)),
-                    parallel(Actions.scaleBy(-0.2f, -0.2f, 0.125f),
-                        moveTo(target.getX(), target.getY(), 0.125f, Interpolation.swingIn)), afterClick));
+                        parallel(Actions.scaleBy(-0.2f, -0.2f, 0.125f),
+                                moveTo(target.getX(), target.getY(), 0.125f, Interpolation.swingIn)), afterClick));
             }
         }
     };
@@ -109,17 +110,19 @@ public class Field extends Table implements Disposable {
         setBackground(new TextureRegionDrawable(background));
         entities = sprites;
         for (int i = 0; i < RANK * RANK; i++) {
-            Tile tile = new Tile();
-            tile.addListener(clickListener);
-            int num = MathUtils.random(0, 6);
-            tile.init(this.entities.get(num), num);
+            // use the factory to create a fully‐initialized tile
+            Tile tile = TileFactory.createRandomTile(entities, clickListener);
             activeTiles.add(tile);
+
             if (i % RANK == 0)
                 row();
             add(tile);
         }
+
         findMatches();
     }
+
+
 
     private void swap(int index1, int index2) {
         activeTiles.swap(index1, index2);
@@ -183,6 +186,8 @@ public class Field extends Table implements Disposable {
                 for (int j = RANK - 1; j >= RANK - matches; j--) {
                     activeTiles.get(j + i * RANK).type = -1;
                 }
+
+                notifyMatch(matches);
             }
         }
         //checking columns
@@ -199,6 +204,7 @@ public class Field extends Table implements Disposable {
                         for (int i2 = i - 1; i2 >= i - matches; i2--) {
                             activeTiles.get(j + i2 * RANK).type = -1;
                         }
+                        notifyMatch(matches);
                     }
                     matches = 1;
                 }
@@ -208,10 +214,12 @@ public class Field extends Table implements Disposable {
                 for (int i = RANK - 1; i >= RANK - matches; i--) {
                     activeTiles.get(j + i * RANK).type = -1;
                 }
+                notifyMatch(matches);
             }
         }
         if (hasMatch) {
-            swapSuccess.play(0.2f, 1f, 0);
+            GameServices.playSwapSuccess();
+
             int count = 1;
             for (Tile tile : activeTiles.select((tile) -> tile.type == -1)) {
                 if (count % 3 == 0)
@@ -233,6 +241,16 @@ public class Field extends Table implements Disposable {
         }
     };
 
+
+    public void setMatchListener(MatchListener listener) {
+        this.listener = listener;
+    }
+
+    private void notifyMatch(int matched) {
+        if (listener != null)
+            listener.onMatch(matched);
+    }
+
     private boolean hasMatches() {
         int matches;
         int colorToMatch;
@@ -247,12 +265,15 @@ public class Field extends Table implements Disposable {
                     colorToMatch = activeTiles.get(j + i * RANK).type;
                     if (matches >= 3) {
                         hasMatch = true;
+                        notifyMatch(matches);
+
                     }
                     matches = 1;
                 }
             }
             if (matches >= 3) {
                 hasMatch = true;
+                notifyMatch(matches);
             }
         }
         for (int j = 0; j < RANK; j++) {
@@ -265,12 +286,14 @@ public class Field extends Table implements Disposable {
                     colorToMatch = activeTiles.get(j + i * RANK).type;
                     if (matches >= 3) {
                         hasMatch = true;
+                        notifyMatch(matches);
                     }
                     matches = 1;
                 }
             }
             if (matches >= 3) {
                 hasMatch = true;
+                notifyMatch(matches);
             }
         }
         return hasMatch;
@@ -282,29 +305,4 @@ public class Field extends Table implements Disposable {
         swapWrong.dispose();
         swapSuccess.dispose();
     }
-    public Tile getTile(int x, int y) {
-        if (x >= 0 && x < RANK && y >= 0 && y < RANK) {
-            return activeTiles.get(x + y * RANK);
-        }
-        return null;
-    }
-    public boolean processMove(int player, int x, int y) {
-        Tile tile = getTile(x, y);
-        if (tile == null || !tile.isMovable()) return false;
-
-        tile.type = -1;
-        return true;
-    }
-
-    public int calculatePoints(int player) {
-        return 10;
-    }
-
-    public boolean isGameOver() {
-        for (Tile tile : activeTiles) {
-            if (tile.type != -1) return false;
-        }
-        return true;
-    }
-
 }

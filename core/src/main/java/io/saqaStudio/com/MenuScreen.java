@@ -1,16 +1,16 @@
-package io.saqaStudio.com.view;
+package io.saqaStudio.com;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import io.saqaStudio.com.model.AnimatedImage;
-import io.saqaStudio.com.model.MatchThree;
+import com.badlogic.gdx.utils.Align;
 
 public class MenuScreen extends ScreenAdapter {
 
@@ -31,7 +31,7 @@ public class MenuScreen extends ScreenAdapter {
         clouds.addAction(Actions.forever(Actions.sequence(Actions.moveBy(20, 0, 3f), Actions.moveBy(-20, 0, 3f))));
 
         AnimatedImage gemAnimation = new AnimatedImage
-            (new Animation<>(0.05f, game.getTexture().findRegions("gem")));
+                (new Animation<>(0.05f, game.getTexture().findRegions("gem")));
         gemAnimation.setSize(200,200);
         gemAnimation.setPosition(450, 180, Align.center);
 
@@ -60,7 +60,7 @@ public class MenuScreen extends ScreenAdapter {
             public void changed(ChangeEvent event, Actor actor) {
                 game.playClick();
                 window.removeActor(table);
-                game.setScreen(new MenuScreen(game));
+                game.setScreen(new RecordsScreen(game));
             }
         });
         table.add(recordsBtn);

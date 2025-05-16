@@ -1,7 +1,7 @@
-package io.saqaStudio.com.model;
+package io.saqaStudio.com;
 
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 public class Tile extends Image  {
@@ -13,9 +13,5 @@ public class Tile extends Image  {
         setDrawable(new TextureRegionDrawable(sprite));
         this.type = index;
     }
-    public boolean isMovable() {
-        return this.type != -1;
-    }
-
 
 }
